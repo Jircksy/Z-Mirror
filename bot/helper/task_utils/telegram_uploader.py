@@ -1,3 +1,5 @@
+# bot/task_utils/telegram_uploader.py
+
 from aiofiles.os import (
     remove,
     path as aiopath,
@@ -82,6 +84,7 @@ class TelegramUploader:
         self._lprefix = ""
         self._lsuffix = ""
         self._lcapfont = ""
+        self._leech_caption = False # Добавлено
         self._media_group = False
         self._is_private = False
         self._sent_msg = None
@@ -104,6 +107,7 @@ class TelegramUploader:
             if "media_group" not in self._listener.user_dict
             else False
         )
+        self._leech_caption = self._listener.user_dict.get("leech_caption", False) # Добавлено
         self._lprefix = self._listener.user_dict.get("lprefix") or (
             config_dict["LEECH_FILENAME_PREFIX"]
             if "lprefix" not in self._listener.user_dict
@@ -497,12 +501,21 @@ class TelegramUploader:
                         continue
                     if self._listener.is_cancelled:
                         return
-                    cap_mono = await self._prepare_file(
-                        file_,
-                        dirpath,
-                        delete_file
-                    )
-                    cap_mono = await self._prepare_caption_font(cap_mono)
+                    
+                    # --- НАЧАЛО ИЗМЕНЕНИЙ ---
+                    caption_entities = None
+                    if self._leech_caption and self._listener.message.reply_to_message and self._listener.message.reply_to_message.caption:
+                        cap_mono = self._listener.message.reply_to_message.caption
+                        caption_entities = self._listener.message.reply_to_message.caption_entities
+                    else:
+                        cap_mono = await self._prepare_file(
+                            file_,
+                            dirpath,
+                            delete_file
+                        )
+                        cap_mono = await self._prepare_caption_font(cap_mono)
+                    # --- КОНЕЦ ИЗМЕНЕНИЙ ---
+
                     if self._last_msg_in_group:
                         group_lists = [
                             x for v in self._media_dict.values() for x in v.keys()
@@ -548,7 +561,8 @@ class TelegramUploader:
                     await self._upload_file(
                         cap_mono,
                         file_,
-                        f_path
+                        f_path,
+                        caption_entities=caption_entities # Добавлено
                     )
                     if self._listener.is_cancelled:
                         return
@@ -677,7 +691,7 @@ class TelegramUploader:
         stop=stop_after_attempt(3),
         retry=retry_if_exception_type(Exception),
     )
-    async def _upload_file(self, cap_mono, file, o_path, force_document=False):
+    async def _upload_file(self, cap_mono, file, o_path, caption_entities=None, force_document=False):
         if (
             self._thumb is not None
             and not await aiopath.exists(self._thumb)
@@ -723,6 +737,7 @@ class TelegramUploader:
                     quote=True,
                     thumb=thumb,
                     caption=cap_mono,
+                    caption_entities=caption_entities, # Добавлено
                     force_document=True,
                     disable_notification=True,
                     progress=self._upload_progress,
@@ -756,6 +771,7 @@ class TelegramUploader:
                     video=self._up_path,
                     quote=True,
                     caption=cap_mono,
+                    caption_entities=caption_entities, # Добавлено
                     duration=duration,
                     width=width,
                     height=height,
@@ -773,6 +789,7 @@ class TelegramUploader:
                     audio=self._up_path,
                     quote=True,
                     caption=cap_mono,
+                    caption_entities=caption_entities, # Добавлено
                     duration=duration,
                     performer=artist,
                     title=title,
@@ -788,6 +805,7 @@ class TelegramUploader:
                     photo=self._up_path,
                     quote=True,
                     caption=cap_mono,
+                    caption_entities=caption_entities, # Добавлено
                     disable_notification=True,
                     progress=self._upload_progress,
                 )
@@ -862,7 +880,8 @@ class TelegramUploader:
             return await self._upload_file(
                 cap_mono,
                 file,
-                o_path
+                o_path,
+                caption_entities # Добавлено
             )
         except Exception as err:
             if (
@@ -889,6 +908,7 @@ class TelegramUploader:
                     cap_mono,
                     file,
                     o_path,
+                    caption_entities, # Добавлено
                     True
                 )
             raise err
