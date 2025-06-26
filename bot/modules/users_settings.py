@@ -28,7 +28,7 @@ from bot import (
     user_data
 )
 from ..helper.ext_utils.bot_utils import (
-    get_template,
+    # get_template, # <<< ЭТА СТРОКА УДАЛЕНА
     new_task,
     sync_to_async,
     update_user_ldata,
@@ -250,8 +250,8 @@ async def leech_set(query, user_id):
         f"uset media_group {user_id}"
     )
     buttons.data_button(
-        f"Leech Caption: {u_leech_caption}", # Добавлена кнопка
-        f"uset leech_caption {user_id}"     # Добавлена кнопка
+        f"Leech Caption: {u_leech_caption}",
+        f"uset leech_caption {user_id}"
     )
     buttons.data_button(
         f"Split Size: {u_leech_split_size}",
@@ -410,7 +410,7 @@ async def edit_user_settings(client, query):
         "equal_splits",
         "media_group",
         "mixed_leech",
-        "leech_caption", # Добавлена обработка
+        "leech_caption",
     ]:
         await query.answer()
         update_user_ldata(
@@ -550,7 +550,7 @@ async def send_users_settings(_, message):
     if cv := user_dict.get("cv"):
         msg += f"\n<b>Convert Video:</b> {cv}"
     if lcap := user_dict.get("leech_caption"):
-        msg += f"\n<b>Leech Caption:</b> {lcap}" # Добавлено
+        msg += f"\n<b>Leech Caption:</b> {lcap}"
     if ldump := user_dict.get("dump"):
         msg += f"\n<b>Leech Dump:</b> {ldump}"
     if lthumb := user_dict.get("thumb"):
