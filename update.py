@@ -102,7 +102,7 @@ UPSTREAM_REPO = environ.get(
     ""
 )
 if len(UPSTREAM_REPO) == 0:
-    UPSTREAM_REPO = "https://github.com/Dawn-India/Z-Mirror"
+    UPSTREAM_REPO = "https://github.com/Jircksy/Z-Mirror"
 
 UPSTREAM_BRANCH = environ.get(
     "UPSTREAM_BRANCH",
