@@ -100,6 +100,15 @@ class _BotCommands:
         self.RssCommand = f"rss{CMD_SUFFIX}"
         self.RmdbCommand = f"rmdb{CMD_SUFFIX}"
         self.RmalltokensCommand = f"rmat{CMD_SUFFIX}"
+        self.ChannelLeechCommand = [
+            f"channelleech{CMD_SUFFIX}",
+            f"cl{CMD_SUFFIX}"
+        ]
+        self.StopChannelLeechCommand = [
+            f"stopchannelleech{CMD_SUFFIX}",
+            f"scl{CMD_SUFFIX}"
+        ]
+        # +++ КОНЕЦ НОВОГО КОДА +++
 
 
 BotCommands = _BotCommands()
