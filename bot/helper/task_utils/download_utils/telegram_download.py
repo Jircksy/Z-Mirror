@@ -147,6 +147,12 @@ class TelegramDownloadHelper:
         )
 
         if media is not None:
+            # +++ НАЧАЛО ИЗМЕНЕНИЙ +++
+            # Проверяем и сохраняем оригинальную подпись вместе с HTML-форматированием
+            if message.caption:
+                self._listener.caption = message.caption.html
+            # +++ КОНЕЦ ИЗМЕНЕНИЙ +++
+            
             async with global_lock:
                 download = media.file_unique_id not in GLOBAL_GID
 
