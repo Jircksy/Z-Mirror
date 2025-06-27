@@ -166,8 +166,8 @@ class Mirror(TaskListener):
         self.as_doc = args["-doc"] or args["-document"]
         self.as_med = args["-med"] or args["-media"]
         self.folder_name = ((
-            f"/{args["-sd"]}" or
-            f"/{args["-samedir"]}"
+            f"/{args['-sd']}" or
+            f"/{args['-samedir']}"
         ) if (
             len(args["-sd"]) or
             len(args["-samedir"])
@@ -514,7 +514,7 @@ class Mirror(TaskListener):
             if ussr or pssw:
                 auth = f"{ussr}:{pssw}"
                 headers += (
-                    f" authorization: Basic {b64encode(auth.encode()).decode("ascii")}"
+                    f" authorization: Basic {b64encode(auth.encode()).decode('ascii')}"
                 )
             await add_aria2c_download(
                 self,
@@ -589,6 +589,37 @@ async def nzb_leech(client, message):
         is_leech=True,
         is_nzb=True
     ).new_event()) # type: ignore
+
+
+async def leech_from_msg(user_message, target_message):
+    """
+    Starts a leech task from a message object, used for channel leech.
+    :param user_message: The original message from the user who initiated the channel leech.
+    :param target_message: The message from the channel to be leeched.
+    """
+    # Создаем экземпляр "слушателя", как если бы это была команда /leech
+    listener = Mirror(
+        client=user_message._client,
+        message=user_message,
+        is_leech=True
+    )
+    
+    # Инициализируем слушателя с контекстом пользователя
+    await listener.get_id()
+    await listener.get_tag(user_message.text.split('\n'))
+
+    # ВАЖНО: Отключаем все лишние операции
+    listener.split_size = 0 # Отключает нарезку
+    listener.compress = False
+    listener.extract = False
+    listener.join = False
+
+    # Определяем путь для скачивания
+    path = f"{DOWNLOAD_DIR}{listener.mid}/"
+
+    # Запускаем загрузку через TelegramDownloadHelper, используя сессию пользователя
+    helper = TelegramDownloadHelper(listener)
+    await helper.add_download(target_message, path, "user")
 
 
 bot.add_handler( # type: ignore
